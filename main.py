@@ -24,14 +24,13 @@ current_event = None
 last_reminder_message_id = None
 last_event_date = None  # Para saber qué evento programamos borrar
 
-tz_argentina = pytz.timezone("America/Argentina/Buenos_Aires")
 tz_mx = pytz.timezone("America/Mexico_City")
 tz_peru = pytz.timezone("America/Lima")
 tz_col = pytz.timezone("America/Bogota")
 tz_ven = pytz.timezone("America/Caracas")
 tz_chile = pytz.timezone("America/Santiago")
+tz_argentina = pytz.timezone("America/Argentina/Buenos_Aires")
 tz_brasil = pytz.timezone("America/Sao_Paulo")
-tz_esp = pytz.timezone("Europe/Madrid")
 
 def format_time(dt):
     return dt.strftime("%H:%M")
