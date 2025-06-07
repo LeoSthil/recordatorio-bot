@@ -7,7 +7,10 @@ from datetime import datetime, timedelta
 import json
 
 # Configuración
-TOKEN = "TU_TOKEN_AQUI"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+TOKEN = os.getenv("TOKEN")
 CHANNEL_ID = 1379477200298053784
 TIMEZONE = "America/Argentina/Buenos_Aires"
 EVENT_HOUR_ARG = 22
