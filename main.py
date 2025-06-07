@@ -58,7 +58,6 @@ def get_all_times(event_date):
         "Venezuela": format_time(dt_arg.astimezone(tz_ven)) + " (UTC-4)",
         "Chile": format_time(dt_arg.astimezone(tz_chile)) + " (UTC-3/-4 dependiendo horario)",
         "Brasil": format_time(dt_arg.astimezone(tz_brasil)) + " (UTC-3)",
-        "España": format_time(dt_arg.astimezone(tz_esp)) + " (UTC+1/+2 dependiendo horario)",
     }
     return times
 
