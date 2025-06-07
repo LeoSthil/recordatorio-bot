@@ -46,7 +46,7 @@ def get_event_message(event):
         return None
 
 def get_event_datetime(event_date):
-    return tz_argentina.localize(datetime.combine(event_date, time(22, 0)))
+    return tz_argentina.localize(datetime.combine(event_date, time(19, 15)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
@@ -105,7 +105,7 @@ async def send_reminder():
     last_reminder_message_id = msg.id
     last_event_date = event_date
 
-    # Programar el borrado del mensaje a la hora del evento (22:00 Argentina)
+    # Programar el borrado del mensaje a la hora del evento (19:15 Argentina)
     event_dt = get_event_datetime(event_date)
     scheduler.add_job(delete_reminder, 'date', run_date=event_dt, args=[CHANNEL_ID, msg.id])
 
