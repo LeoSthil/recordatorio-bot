@@ -40,7 +40,7 @@ def get_event_message(event):
         return ("Guerreros, mañana es la 💥GUERRA TERRITORIAL💥 Demuestren su fuerza, estrategia y honor en el campo de batalla. "
                 "NO OLVIDEN MARCAR EL BOT. 🔥⚔️La victoria será nuestra🔥⚔️.")
     elif event == "entrenamiento":
-        return ("Guerreros, es nuestro deber seguir mejorando, así que los invitamos cordialmente a un 💥ENTRENAMIENTO💥 "
+        return ("Guerreros, es nuestro deber seguir mejorando nuestra forma de juegar, así que los invitamos cordialmente a un 💥ENTRENAMIENTO💥 "
                 "La excelencia no es un acto, sino un hábito. NO OLVIDEN MARCAR EL BOT.")
     else:
         return None
