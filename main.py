@@ -151,8 +151,8 @@ async def prueba(ctx):
 async def on_ready():
     print(f'Bot listo! Conectado como {bot.user}')
     scheduler.remove_all_jobs()
-    # Recordatorios lunes y viernes a las 17:00 Argentina
-    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,fri', hour=17, minute=0, timezone=tz_argentina)
+    # Recordatorios lunes y sábados a las 16:00 Argentina
+    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,sat', hour=16, minute=0, timezone=tz_argentina)
     scheduler.start()
 
 bot.run(TOKEN)
