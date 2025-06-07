@@ -20,10 +20,10 @@ bot = commands.Bot(command_prefix='!', intents=intents, allowed_mentions=allowed
 
 scheduler = AsyncIOScheduler()
 
-# Evento actual a recordar ('guerra' o 'entrenamiento')
 current_event = None
+last_reminder_message_id = None
+last_event_date = None  # Para saber qué evento programamos borrar
 
-# Horarios y zonas horarias
 tz_argentina = pytz.timezone("America/Argentina/Buenos_Aires")
 tz_mx = pytz.timezone("America/Mexico_City")
 tz_peru = pytz.timezone("America/Lima")
@@ -38,18 +38,16 @@ def format_time(dt):
 
 def get_event_message(event):
     if event == "guerra":
-        return ("@everyone Guerreros, mañana es la 💥GUERRA TERRITORIAL💥 Demuestren su fuerza, estrategia y honor en el campo de batalla. "
+        return ("Guerreros, mañana es la 💥GUERRA TERRITORIAL💥 Demuestren su fuerza, estrategia y honor en el campo de batalla. "
                 "NO OLVIDEN MARCAR EL BOT. 🔥⚔️La victoria será nuestra🔥⚔️.")
     elif event == "entrenamiento":
-        return ("@everyone Guerreros, es nuestro deber seguir mejorando, así que los invitamos cordialmente a un 💥ENTRENAMIENTO💥 "
+        return ("Guerreros, es nuestro deber seguir mejorando, así que los invitamos cordialmente a un 💥ENTRENAMIENTO💥 "
                 "La excelencia no es un acto, sino un hábito. NO OLVIDEN MARCAR EL BOT.")
     else:
         return None
 
 def get_event_datetime(event_date):
-    # El evento empieza a las 22:00 hora Argentina
-    dt_arg = tz_argentina.localize(datetime.combine(event_date, time(22, 0)))
-    return dt_arg
+    return tz_argentina.localize(datetime.combine(event_date, time(22, 0)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
@@ -66,6 +64,8 @@ def get_all_times(event_date):
     return times
 
 async def send_reminder():
+    global last_reminder_message_id, last_event_date
+
     if current_event is None:
         return
 
@@ -74,39 +74,55 @@ async def send_reminder():
         print("No se encontró el canal")
         return
 
-    # El recordatorio es el día antes del evento, a las 17:00 Argentina
     ahora_arg = datetime.now(tz_argentina)
-    # Calcular fecha del evento dependiendo del evento y día actual:
-    # Para guerra: eventos martes y sábados (hora Argentina)
-    # Recordatorios lunes y viernes 17:00
-
-    # La función solo envía cuando es el día correcto para el evento seleccionado, pero el scheduler se encarga de llamar este método solo los lunes y viernes.
 
     event_date = None
     if current_event == "guerra":
-        # El evento es mañana si hoy es lunes o viernes y mañana es martes o sábado
         manana = ahora_arg + timedelta(days=1)
         if manana.weekday() in [1, 5]:  # martes=1, sábado=5
             event_date = manana.date()
         else:
-            return  # no enviar
+            return
     elif current_event == "entrenamiento":
-        # El entrenamiento puede ser cualquier día, asumiremos que es todos los días.
         manana = ahora_arg + timedelta(days=1)
         event_date = manana.date()
 
     if event_date is None:
         return
 
-    mensaje = get_event_message(current_event)
+    # Si hay un mensaje previo, intentar borrarlo
+    if last_reminder_message_id:
+        try:
+            msg = await channel.fetch_message(last_reminder_message_id)
+            await msg.delete()
+        except Exception as e:
+            print(f"No se pudo borrar el mensaje anterior: {e}")
+
+    mensaje = "@everyone " + get_event_message(current_event)
     horarios = get_all_times(event_date)
-
     horarios_str = "\n".join([f"**{pais}:** {hora}" for pais, hora in horarios.items()])
-
     texto_final = f"{mensaje}\n\n🕒 Horarios de inicio según países:\n{horarios_str}"
 
-    await channel.send(texto_final)
+    msg = await channel.send(texto_final)
+    last_reminder_message_id = msg.id
+    last_event_date = event_date
 
+    # Programar el borrado del mensaje a la hora del evento (22:00 Argentina)
+    event_dt = get_event_datetime(event_date)
+    scheduler.add_job(delete_reminder, 'date', run_date=event_dt, args=[CHANNEL_ID, msg.id])
+
+async def delete_reminder(channel_id, message_id):
+    channel = bot.get_channel(channel_id)
+    if channel is None:
+        print("No se encontró el canal para borrar mensaje")
+        return
+
+    try:
+        msg = await channel.fetch_message(message_id)
+        await msg.delete()
+        print(f"Mensaje {message_id} borrado a la hora del evento.")
+    except Exception as e:
+        print(f"No se pudo borrar el mensaje {message_id}: {e}")
 
 @bot.command()
 async def guerra(ctx):
@@ -127,7 +143,7 @@ async def prueba(ctx):
         return
 
     event_date = datetime.now(tz_argentina).date() + timedelta(days=1)
-    mensaje = get_event_message(current_event)
+    mensaje = "@everyone " + get_event_message(current_event)
     horarios = get_all_times(event_date)
     horarios_str = "\n".join([f"**{pais}:** {hora}" for pais, hora in horarios.items()])
     texto_final = f"{mensaje}\n\n🕒 Horarios de inicio según países:\n{horarios_str}"
@@ -136,12 +152,8 @@ async def prueba(ctx):
 @bot.event
 async def on_ready():
     print(f'Bot listo! Conectado como {bot.user}')
-    # Programar el recordatorio automático a las 17:00 de Argentina los lunes y viernes
     scheduler.remove_all_jobs()
-
-    # Scheduler para recordatorios lunes y viernes 17:00 hora Argentina
-    # Usamos cron: minute hour day_of_month month day_of_week
-    # día de la semana: lunes=0, viernes=4
+    # Recordatorios lunes y viernes a las 17:00 Argentina
     scheduler.add_job(send_reminder, 'cron', day_of_week='mon,fri', hour=17, minute=0, timezone=tz_argentina)
     scheduler.start()
 
