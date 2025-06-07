@@ -46,7 +46,7 @@ def get_event_message(event):
         return None
 
 def get_event_datetime(event_date):
-    return tz_argentina.localize(datetime.combine(event_date, time(19, 15)))
+    return tz_argentina.localize(datetime.combine(event_date, time(20, 0)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
@@ -105,7 +105,7 @@ async def send_reminder():
     last_reminder_message_id = msg.id
     last_event_date = event_date
 
-    # Programar el borrado del mensaje a la hora del evento (19:15 Argentina)
+    # Programar el borrado del mensaje a la hora del evento (20:00 Argentina)
     event_dt = get_event_datetime(event_date)
     scheduler.add_job(delete_reminder, 'date', run_date=event_dt, args=[CHANNEL_ID, msg.id])
 
@@ -151,8 +151,8 @@ async def prueba(ctx):
 async def on_ready():
     print(f'Bot listo! Conectado como {bot.user}')
     scheduler.remove_all_jobs()
-    # Recordatorios lunes y sábados a las 16:00 Argentina
-    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,sat', hour=16, minute=0, timezone=tz_argentina)
+    # Recordatorios lunes y sábados a las 19:45 Argentina
+    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,sat', hour=19, minute=45, timezone=tz_argentina)
     scheduler.start()
 
 bot.run(TOKEN)
