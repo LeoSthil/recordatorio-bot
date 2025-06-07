@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, time, timedelta
 import pytz
@@ -17,12 +17,11 @@ intents.message_content = True
 allowed_mentions = discord.AllowedMentions(everyone=True)
 
 bot = commands.Bot(command_prefix='!', intents=intents, allowed_mentions=allowed_mentions)
-
 scheduler = AsyncIOScheduler()
 
 current_event = None
 last_reminder_message_id = None
-last_event_date = None  # Para saber qué evento programamos borrar
+last_event_date = None
 
 tz_mx = pytz.timezone("America/Mexico_City")
 tz_peru = pytz.timezone("America/Lima")
@@ -46,7 +45,8 @@ def get_event_message(event):
         return None
 
 def get_event_datetime(event_date):
-    return tz_argentina.localize(datetime.combine(event_date, time(20, 0)))
+    # Hora del evento: 20:30 Argentina
+    return tz_argentina.localize(datetime.combine(event_date, time(20, 30)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
@@ -88,7 +88,7 @@ async def send_reminder():
     if event_date is None:
         return
 
-    # Si hay un mensaje previo, intentar borrarlo
+    # Borrar mensaje anterior si existe
     if last_reminder_message_id:
         try:
             msg = await channel.fetch_message(last_reminder_message_id)
@@ -105,9 +105,10 @@ async def send_reminder():
     last_reminder_message_id = msg.id
     last_event_date = event_date
 
-    # Programar el borrado del mensaje a la hora del evento (20:00 Argentina)
+    # Programar borrado para las 20:30 (hora del evento)
     event_dt = get_event_datetime(event_date)
-    scheduler.add_job(delete_reminder, 'date', run_date=event_dt, args=[CHANNEL_ID, msg.id])
+    print(f"Mensaje programado para borrarse a las {event_dt} (ARG) / {event_dt.astimezone(pytz.utc)} (UTC)")
+    scheduler.add_job(delete_reminder, 'date', run_date=event_dt.astimezone(pytz.utc), args=[CHANNEL_ID, msg.id])
 
 async def delete_reminder(channel_id, message_id):
     channel = bot.get_channel(channel_id)
@@ -151,8 +152,8 @@ async def prueba(ctx):
 async def on_ready():
     print(f'Bot listo! Conectado como {bot.user}')
     scheduler.remove_all_jobs()
-    # Recordatorios lunes y sábados a las 19:45 Argentina
-    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,sat', hour=19, minute=45, timezone=tz_argentina)
+    # Enviar recordatorio lunes y sábado a las 20:20 ARG
+    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,sat', hour=20, minute=20, timezone=tz_argentina)
     scheduler.start()
 
 bot.run(TOKEN)
