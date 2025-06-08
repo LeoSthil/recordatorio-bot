@@ -54,12 +54,13 @@ def get_event_datetime(event_date):
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
     times = {
-        "Argentina": format_time(dt_arg.astimezone(tz_argentina)),
+        
         "México": format_time(dt_arg.astimezone(tz_mx)),
         "Perú": format_time(dt_arg.astimezone(tz_peru)),
         "Colombia": format_time(dt_arg.astimezone(tz_col)),
         "Venezuela": format_time(dt_arg.astimezone(tz_ven)),
         "Chile": format_time(dt_arg.astimezone(tz_chile)),
+        "Argentina": format_time(dt_arg.astimezone(tz_argentina)),
         "Brasil": format_time(dt_arg.astimezone(tz_brasil)),
     }
     return times
