@@ -49,7 +49,7 @@ def get_event_message(event):
         return None
 
 def get_event_datetime(event_date):
-    return tz_argentina.localize(datetime.combine(event_date, time(23, 0)))
+    return tz_argentina.localize(datetime.combine(event_date, time(22, 0)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
