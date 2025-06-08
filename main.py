@@ -40,11 +40,11 @@ def format_time(dt):
 
 def get_event_message(event):
     if event == "guerra":
-        return ("Guerreros, mañana es la 💥GUERRA TERRITORIAL💥 Demuestren su fuerza, estrategia y honor en el campo de batalla. "
-                "NO OLVIDEN MARCAR EL BOT. 🔥⚔️La victoria será nuestra🔥⚔️.")
+        return ("¡Guerreros! Les recordamos que mañana es la 💥GUERRA TERRITORIAL💥 Demuestren su fuerza, estrategia y honor en el campo de batalla. "
+                "No olviden MARCAR EL BOT, SUBIR SU BARRACÓN y CONECTARSE 30 MINUTOS ANTES para revisar la Micro y la Macro. 🔥⚔️La victoria será nuestra🔥⚔️.")
     elif event == "entrenamiento":
-        return ("Guerreros, es nuestro deber seguir mejorando nuestra forma de jugar, así que los invitamos cordialmente a un 💥ENTRENAMIENTO💥 "
-                "La excelencia no es un acto, sino un hábito. NO OLVIDEN MARCAR EL BOT.")
+        return ("¡Atención guerreros! Mañana tenemos 💥ENTRENAMIENTO💥 "
+                "La excelencia no es un acto, sino un hábito. No olviden MARCAR EL BOT, SUBIR SU BARRACÓN y CONECTARSE 30 MINUTOS ANTES para revisar la Micro y la Macro")
     else:
         return None
 
