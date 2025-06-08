@@ -49,12 +49,11 @@ def get_event_message(event):
         return None
 
 def get_event_datetime(event_date):
-    return tz_argentina.localize(datetime.combine(event_date, time(22, 0)))
+    return tz_argentina.localize(datetime.combine(event_date, time(23, 0)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
     times = {
-        
         "México": format_time(dt_arg.astimezone(tz_mx)),
         "Perú": format_time(dt_arg.astimezone(tz_peru)),
         "Colombia": format_time(dt_arg.astimezone(tz_col)),
@@ -165,15 +164,53 @@ async def borrar(ctx):
     except Exception as e:
         await ctx.send(f"Error al programar el borrado: {e}")
 
+@bot.command()
+async def probarhoy(ctx):
+    """Publica un mensaje de prueba hoy a las 23:45 y lo borra a las 23:50, con formato según evento actual"""
+    canal = bot.get_channel(CHANNEL_ID)
+    if canal is None:
+        await ctx.send("No se encontró el canal.")
+        return
+
+    if current_event is None:
+        await ctx.send("❌ No hay evento configurado. Usa !guerra o !entrenamiento primero.")
+        return
+
+    ahora = datetime.now(tz_argentina)
+    envio = ahora.replace(hour=23, minute=45, second=0, microsecond=0)
+    borrado = ahora.replace(hour=23, minute=50, second=0, microsecond=0)
+
+    if envio < ahora:
+        await ctx.send("⚠️ Ya pasaron las 23:45 de hoy. Espera a mañana o ajusta la hora.")
+        return
+
+    async def enviar_y_borrar():
+        try:
+            mensaje_texto = "@everyone " + get_event_message(current_event)
+            horarios = get_all_times(envio.date())
+            horarios_str = "\n".join([f"**{pais}:** {hora}" for pais, hora in horarios.items()])
+            texto_final = f"{mensaje_texto}\n\n🕒 Horarios de inicio según países:\n{horarios_str}"
+
+            mensaje = await canal.send(texto_final)
+            print(f"✅ Mensaje de prueba enviado a las {envio.strftime('%H:%M:%S')}")
+            scheduler.add_job(delete_reminder, 'date', run_date=borrado, args=[CHANNEL_ID, mensaje.id])
+        except Exception as e:
+            print(f"❌ Error al enviar mensaje de prueba: {e}")
+
+    scheduler.add_job(enviar_y_borrar, 'date', run_date=envio)
+    await ctx.send(f"✅ Mensaje de prueba programado para las {envio.strftime('%H:%M')} y se borrará a las {borrado.strftime('%H:%M')} (hora Argentina).")
+
 @bot.event
 async def on_ready():
     print(f'🤖 Bot listo! Conectado como {bot.user}')
-    # Mostrar al bot como "en línea" con una actividad personalizada
     await bot.change_presence(
-    status=discord.Status.online,
-    activity=discord.Activity(type=discord.ActivityType.watching, name="sus partidas"))
+        status=discord.Status.online,
+        activity=discord.Activity(type=discord.ActivityType.watching, name="sus partidas")
+    )
     scheduler.remove_all_jobs()
+    # Cambié a 17:00 lunes y viernes, según tu código original:
     scheduler.add_job(send_reminder, 'cron', day_of_week='mon,fri', hour=17, minute=0, timezone=tz_argentina)
     scheduler.start()
 
 bot.run(TOKEN)
+
