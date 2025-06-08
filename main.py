@@ -164,7 +164,7 @@ async def borrar(ctx):
 @bot.event
 async def on_ready():
     print(f'🤖 Bot listo! Conectado como {bot.user}')
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game("¡listo para la batalla!"))
     scheduler.remove_all_jobs()
     scheduler.add_job(send_reminder, 'cron', day_of_week='mon,fri', hour=17, minute=0, timezone=tz_argentina)
     scheduler.start()
-
