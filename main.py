@@ -168,7 +168,9 @@ async def borrar(ctx):
 async def on_ready():
     print(f'🤖 Bot listo! Conectado como {bot.user}')
     # Mostrar al bot como "en línea" con una actividad personalizada
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game("¡listo para la batalla!"))
+    await bot.change_presence(
+    status=discord.Status.online,
+    activity=discord.Activity(type=discord.ActivityType.watching, name="sus partidas"))
     scheduler.remove_all_jobs()
     scheduler.add_job(send_reminder, 'cron', day_of_week='mon,fri', hour=17, minute=0, timezone=tz_argentina)
     scheduler.start()
