@@ -17,7 +17,7 @@ CHANNEL_ID = 1379477200298053784
 intents = discord.Intents.default()
 intents.message_content = True
 
-allowed_mentions = discord.AllowedMentions(everyone=True)
+allowed_mentions = discord.AllowedMentions(roles=True)  # Permitir mencionar roles
 
 bot = commands.Bot(command_prefix='!', intents=intents, allowed_mentions=allowed_mentions)
 
@@ -49,7 +49,7 @@ def get_event_message(event):
         return None
 
 def get_event_datetime(event_date):
-    return tz_argentina.localize(datetime.combine(event_date, time(22, 0)))
+    return tz_argentina.localize(datetime.combine(event_date, time(23, 0)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
@@ -75,6 +75,14 @@ async def send_reminder():
         print("No se encontró el canal")
         return
 
+    guild = channel.guild
+    miembros_rol = discord.utils.find(lambda r: r.name.lower() == "miembros", guild.roles)
+    if miembros_rol is None:
+        print("No se encontró el rol 'miembros' en el servidor.")
+        mention_rol = "@miembros"
+    else:
+        mention_rol = miembros_rol.mention
+
     ahora_arg = datetime.now(tz_argentina)
 
     event_date = None
@@ -98,7 +106,7 @@ async def send_reminder():
         except Exception as e:
             print(f"No se pudo borrar el mensaje anterior: {e}")
 
-    mensaje = "@everyone " + get_event_message(current_event)
+    mensaje = f"{mention_rol} " + get_event_message(current_event)
     horarios = get_all_times(event_date)
     horarios_str = "\n".join([f"**{pais}:** {hora}" for pais, hora in horarios.items()])
     texto_final = f"{mensaje}\n\n🕒 Horarios de inicio según países:\n{horarios_str}"
@@ -145,8 +153,11 @@ async def prueba(ctx):
             await ctx.send("No hay evento configurado. Usa !guerra o !entrenamiento primero.")
             return
 
+        miembros_rol = discord.utils.find(lambda r: r.name.lower() == "miembros", ctx.guild.roles)
+        mention_rol = miembros_rol.mention if miembros_rol else "@miembros"
+
         event_date = datetime.now(tz_argentina).date() + timedelta(days=1)
-        mensaje = "@everyone " + get_event_message(current_event)
+        mensaje = f"{mention_rol} " + get_event_message(current_event)
         horarios = get_all_times(event_date)
         horarios_str = "\n".join([f"**{pais}:** {hora}" for pais, hora in horarios.items()])
         texto_final = f"{mensaje}\n\n🕒 Horarios de inicio según países:\n{horarios_str}"
@@ -186,7 +197,10 @@ async def probarhoy(ctx):
 
     async def enviar_y_borrar():
         try:
-            mensaje_texto = "@everyone " + get_event_message(current_event)
+            miembros_rol = discord.utils.find(lambda r: r.name.lower() == "miembros", canal.guild.roles)
+            mention_rol = miembros_rol.mention if miembros_rol else "@miembros"
+
+            mensaje_texto = f"{mention_rol} " + get_event_message(current_event)
             horarios = get_all_times(envio.date())
             horarios_str = "\n".join([f"**{pais}:** {hora}" for pais, hora in horarios.items()])
             texto_final = f"{mensaje_texto}\n\n🕒 Horarios de inicio según países:\n{horarios_str}"
@@ -213,4 +227,3 @@ async def on_ready():
     scheduler.start()
 
 bot.run(TOKEN)
-
