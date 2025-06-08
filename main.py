@@ -6,6 +6,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, time, timedelta
 import pytz
 
+# Enlace de invitación del bot (para agregarlo a tu servidor):
+# https://discord.com/oauth2/authorize?client_id=1380597605754605801&permissions=142336&integration_type=0&scope=bot
+
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
@@ -40,7 +43,7 @@ def get_event_message(event):
         return ("Guerreros, mañana es la 💥GUERRA TERRITORIAL💥 Demuestren su fuerza, estrategia y honor en el campo de batalla. "
                 "NO OLVIDEN MARCAR EL BOT. 🔥⚔️La victoria será nuestra🔥⚔️.")
     elif event == "entrenamiento":
-        return ("Guerreros, es nuestro deber seguir mejorando nuestra forma de jugar, así que los invitamos cordialmente a un 💥ENTRENAMIENTO💥 "
+        return ("Guerreros, es nuestro deber seguir mejorando nuestra forma de juegar, así que los invitamos cordialmente a un 💥ENTRENAMIENTO💥 "
                 "La excelencia no es un acto, sino un hábito. NO OLVIDEN MARCAR EL BOT.")
     else:
         return None
@@ -164,7 +167,10 @@ async def borrar(ctx):
 @bot.event
 async def on_ready():
     print(f'🤖 Bot listo! Conectado como {bot.user}')
+    # Mostrar al bot como "en línea" con una actividad personalizada
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("¡listo para la batalla!"))
     scheduler.remove_all_jobs()
     scheduler.add_job(send_reminder, 'cron', day_of_week='mon,fri', hour=17, minute=0, timezone=tz_argentina)
     scheduler.start()
+
+bot.run(TOKEN)
