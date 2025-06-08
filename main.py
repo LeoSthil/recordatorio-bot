@@ -49,7 +49,7 @@ def get_event_message(event):
         return None
 
 def get_event_datetime(event_date):
-    return tz_argentina.localize(datetime.combine(event_date, time(22, 30)))
+    return tz_argentina.localize(datetime.combine(event_date, time(22, 0)))
 
 def get_all_times(event_date):
     dt_arg = get_event_datetime(event_date)
@@ -173,7 +173,7 @@ async def on_ready():
     status=discord.Status.online,
     activity=discord.Activity(type=discord.ActivityType.watching, name="sus partidas"))
     scheduler.remove_all_jobs()
-    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,sat', hour=22, minute=15, timezone=tz_argentina)
+    scheduler.add_job(send_reminder, 'cron', day_of_week='mon,fri', hour=17, minute=0, timezone=tz_argentina)
     scheduler.start()
 
 bot.run(TOKEN)
